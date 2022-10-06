@@ -16,9 +16,9 @@ public:
     void startExecution();
     void executeUserProgram();
     void MOS();
-    void reaD();
-    void writE();
-    void terminatE();
+    void read();
+    void write();
+    void terminate();
     fstream Input;
     fstream Output;
 };
@@ -76,16 +76,12 @@ void program::load()
             }
         }
     } while (!Input.eof());
+
     int x = 0;
-    for (int i = 0; i < 10; i++)
-    {
-        if (M[i][0] != '\0')
-        {
+    for (int i = 0; i < 100; i++)
+    {       //printing all memory from 00-99
             cout << "M" << x << ":" << M[i][0] << M[i][1] << M[i][2] << M[i][3] << endl;
             x++;
-        }
-        else
-            break;
     }
 }
 
@@ -98,11 +94,17 @@ void program::startExecution()
 void program::executeUserProgram()
 {
     while(IC<10){
+
+        //reading next instruction
         IR[0]=M[IC][0];
         IR[1]=M[IC][1];
         IR[2]=M[IC][2];
         IR[3]=M[IC][3];
+
+
         IC++;
+
+
         if(IR[0]=='P'){
             SI=2;
             MOS();
@@ -133,17 +135,49 @@ void program::executeUserProgram()
 void program::MOS(){
     switch(SI){
         case 1:
-            reaD();
+            read();
             break;
         case 2:
-            writE();
+            write();
             break;
         case 3:
-            terminatE();
+            terminate();
             break;
         default:
             break;
     }
+}
+
+void program::read(){
+  
+    //reading data from data card and putting it into buffer
+    Input.getline(buffer, 40);
+
+    //reading OP_CODE from IR and converting it into int data type
+    char op_code[2];
+    op_code[0] = IR[2];
+    op_code[1] = IR[3];
+
+    //mem has the op_code
+    int mem = atoi(op_code);    
+    
+    int k = 0;
+            for (int m = mem ; m < mem + 10; m++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    M[m][j] = buffer[k];
+                    k++;
+                }
+            }
+
+}
+
+void program::write(){
+    cout << "write\n";
+}
+void program::terminate(){
+    cout << "terminate\n";
 }
 
 int main()
