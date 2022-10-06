@@ -16,6 +16,9 @@ public:
     void startExecution();
     void executeUserProgram();
     void MOS();
+    void reaD();
+    void writE();
+    void terminatE();
     fstream Input;
     fstream Output;
 };
@@ -128,7 +131,19 @@ void program::executeUserProgram()
 }
 
 void program::MOS(){
-    
+    switch(SI){
+        case 1:
+            reaD();
+            break;
+        case 2:
+            writE();
+            break;
+        case 3:
+            terminatE();
+            break;
+        default:
+            break;
+    }
 }
 
 int main()
