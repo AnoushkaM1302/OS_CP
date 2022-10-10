@@ -127,17 +127,17 @@ void program::executeUserProgram()
 
         IC++;
 
-        if (IR[0] == 'P')
+        if (IR[0] == 'P' && IR[1] == 'D')
         {
             SI = 2;
             MOS();
         }
-        else if (IR[0] == 'G')
+        else if (IR[0] == 'G' && IR[1] == 'D')
         {
             SI = 1;
             MOS();
         }
-        else if (IR[0] == 'L')
+        else if (IR[0] == 'L' && IR[1] == 'R')
         {
             int loc = getloc();
 
@@ -146,7 +146,7 @@ void program::executeUserProgram()
                 R[i] = M[loc][i];
             }
         }
-        else if (IR[0] == 'S')
+        else if (IR[0] == 'S' && IR[1] == 'R')
         {
             int loc = getloc();
             for (int i = 0; i < 4; i++)
@@ -154,7 +154,7 @@ void program::executeUserProgram()
                 M[loc][i] = R[i];
             }
         }
-        else if (IR[0] == 'B')
+        else if (IR[0] == 'B' && IR[1] == 'T')
         {
             if (C)
             {
@@ -162,7 +162,7 @@ void program::executeUserProgram()
                 IC = loc;
             }
         }
-        else if (IR[0] == 'C')
+        else if (IR[0] == 'C' && IR[1] == 'R')
         {
 
             int loc = getloc();
