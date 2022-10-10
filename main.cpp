@@ -7,7 +7,7 @@ class program
     char IR[4];
     char R[4];
     int IC, SI;
-    char buffer[40];
+    char buffer[100];
     bool C;
     int flag;
     int m;
@@ -56,13 +56,13 @@ void program::load()
     {
 
         // initialising buffer
-        for (int i = 0; i < 40; i++)
+        for (int i = 0; i < 100; i++)
         {
-            buffer[i] = '\0';
+            buffer[i] = ' ';
         }
 
         // reading from input file line by line
-        Input.getline(buffer, 40);
+        Input.getline(buffer, 100);
 
         if (buffer[0] == '$' && buffer[1] == 'A' && buffer[2] == 'M' && buffer[3] == 'J')
         {
@@ -76,11 +76,10 @@ void program::load()
         {
             int x = 0;
             for (int i = 0; i < 100; i++)
-            { // printing all memory from 00-99
+            {
                 cout << "M" << x << ":" << M[i][0] << M[i][1] << M[i][2] << M[i][3] << endl;
                 x++;
             }
-
             break;
         }
         else
@@ -91,7 +90,6 @@ void program::load()
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    // error handling for when the OP_CODE is 'H'
                     if (buffer[k] == 'H')
                     {
                         M[m][j] = buffer[k];
@@ -101,7 +99,7 @@ void program::load()
                     M[m][j] = buffer[k];
                     k++;
                 }
-                if (k == 40 || buffer[k] == ' ' || buffer[k] == '\0')
+                if (buffer[k] == ' ' || buffer[k] == '\0')
                 {
                     break;
                 }
@@ -119,7 +117,7 @@ void program::startExecution()
 void program::executeUserProgram()
 {
 
-    while (IC < 10)
+    while (true)
     {
         // reading next instruction
         IR[0] = M[IC][0];
@@ -182,6 +180,7 @@ void program::executeUserProgram()
         {
             SI = 3;
             MOS();
+            break;
         }
     }
 }
@@ -208,7 +207,7 @@ void program::read()
 {
 
     // reading data from data card and putting it into buffer
-    Input.getline(buffer, 40);
+    Input.getline(buffer, 100);
 
     if (buffer[0] == '$' && buffer[1] == 'E' && buffer[2] == 'N' && buffer[3] == 'D')
     {
@@ -233,31 +232,24 @@ void program::read()
 
 void program::write()
 {
+
+    for(int i=0;i<100;i++){
+        buffer[i]=' ';
+    }
     int loc = getloc();
     // reading data from Memory and putting it into buffer
     int k = 0;
-    for (int m = loc; m < loc + 10; m++)
+
+    for (int l = loc; l < loc + 10; l++)
     {
         for (int j = 0; j < 4; j++)
         {
-            buffer[k] = M[m][j];
+            buffer[k] = M[l][j];
+            if(buffer[k]!='\0')
+                Output<<buffer[k];
             k++;
         }
     }
-
-    // printing buffer data to output.txt
-    string output = "";
-    for (int i = 0; i < 40; i++)
-    {
-        if (buffer[i] != '\0')
-        {
-            output += buffer[i];
-        }
-    }
-
-    cout << "output: " << output << endl;
-
-    Output << output;
     Output << "\n";
     SI = 0;
 }
@@ -266,7 +258,7 @@ void program::terminate()
 {
     cout << "terminate\n";
     Output << "\n\n";
-    load();
+    SI=0;
 }
 
 int main()
@@ -280,10 +272,6 @@ int main()
     if (!prog.Input)
     {
         cout << "File cannot open\n";
-    }
-    else
-    {
-        cout << "File Exist \n";
     }
     prog.load();
     prog.Input.close();
