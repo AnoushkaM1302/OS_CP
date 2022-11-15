@@ -8,7 +8,7 @@ struct PCB
     int TTL;
     int TLL;
     int TTC;
-    int LLC;
+    int LLC; 
 } pcb;
 
 class program
@@ -21,12 +21,12 @@ class program
     char buffer[40];
     bool isAllocated[30]; // CHANGES
     bool C;
-    int flag;
-    int m;
+    // int flag;
+    // int m;
     int EM; // c
     // int VA; //c
     int RA; // c
-    int ptc;
+    int ptc; //0-9
 
 public:
     void init(); // correct
@@ -68,12 +68,8 @@ void program::init()
 
     PTR[4] = {-1}; // c
 
-    flag = 0;
-
-    m = 0;
 
     EM = 0; // c
-
     RA = -1; // c
     TI = 0;  // c
     SI = 3;  // c
@@ -130,7 +126,7 @@ int program::allocate()
 
     int block = rand() % 30;
 
-    if(isAllocated[block]){
+    while(isAllocated[block]){
         block = rand() % 30;
     }
 
@@ -342,8 +338,8 @@ void program::executeUserProgram()
         if (IR[0] == 'H')
         {
             SI = 3;
-            MOS();
             pcb.TTC++;
+            MOS();
             break;
         }
         else{
@@ -368,6 +364,7 @@ void program::executeUserProgram()
                  << endl;
             SI = 1;
             MOS();
+            
             
         }
         else if (IR[0] == 'L' && IR[1] == 'R')
@@ -439,8 +436,8 @@ void program::MOS()
     Output << "MOS() called....\n";
     Output << "INTERRUPT VALUES:\n";
     Output << "SI: " << SI <<endl;
-    Output << "PI: " << SI <<endl;
-    Output << "TI: " << SI <<endl << endl;
+    Output << "PI: " << PI <<endl;
+    Output << "TI: " << TI <<endl << endl;
 
     // TI and PI
     if (TI == 0 && PI == 1)
@@ -605,7 +602,7 @@ void program::write()
 
     cout << "output: " << output << endl;
 
-    Output << output;
+    Output << "Output: " << output;
     Output << "\n";
     SI = 0;
 }
