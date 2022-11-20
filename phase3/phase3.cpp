@@ -12,6 +12,7 @@ const int TS = 100;
 
 // queues
 queue<PCB> rq, ioq, lq, tq;
+queue<char *> ebq, ifbq, ofbq;
 
 //Interrupt routines
 void IR1();
@@ -358,17 +359,49 @@ void program::MOS()
 
 }
 
+void IR2(){
+ //Print given ofb, change status from ofb to eb
+
+char* buffer = ofbq.front();
+ofbq.pop();
+ string output = "";
+ for(int i=0; i<40 ; i++){
+    output+=buffer[i];
+ }
+
+//initializing the buffer
+ Output << output << endl;
+ for(int i=0; i<40 ; i++){
+    buffer[i] = '\0';
+ }
+
+//Return buffer to eb(q)
+ ebq.push(buffer);
+
+//If ofb(q) not empty, 	
+if(ofbq.empty() == false){
+
+    //Get next ofb
+    buffer = ofbq.front();
+    ofbq.pop();
+
+    //start Channel 2
+    start_ch2();
+}
+
+}
+
 class super_mem
 {
 
 public:
-    int cebq, cifbq, cofbq; // counters for queues
-    queue<char *> ebq, ifbq, ofbq;
+    // int cebq, cifbq, cofbq; // counters for queues
+    
     super_mem()
     {
-        cebq = 10;
-        cifbq = 0;
-        cofbq = 0;
+        // cebq = 10;
+        // cifbq = 0;
+        // cofbq = 0;
 
         for (int i = 0; i < 10; i++)
         {
@@ -431,7 +464,7 @@ void ch1_start()
     ch1.flag = true;
 }
 
-void ch2_start()
+void start_ch2()
 {
     IOI -= 2;
     ch2.timer = 0;
