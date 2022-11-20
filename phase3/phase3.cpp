@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int CH[4] = {0, 5, 5, 2}; //0th value is not used
-map <int, string> EM;
+int CH[4] = {0, 5, 5, 2}; // 0th value is not used
+map<int, string> EM;
 
 ifstream Input;
 ofstream Output;
@@ -10,42 +10,48 @@ ofstream Output;
 int SI, PI, TI, IOI, TSC;
 const int TS = 100;
 
-//queues
+// queues
 queue<PCB> rq, ioq, lq, tq;
 
-//utility functions
-void move_buffer( queue<char*>& q1, queue<char*>& q2);
-void move_pcb( queue<char*>& q1, queue<char*>& q2);
+//Interrupt routines
+void IR1();
+void IR2();
+void IR3();
+
+// utility functions
+void move_buffer(queue<char *> &q1, queue<char *> &q2);
+void move_pcb(queue<PCB> &q1, queue<PCB> &q2);
 
 class PCB
 {
-    public:
+public:
     int jobid, TTC, LLC, TTL, TLL;
     int P_track, N_PC, D_track, N_DC, O_track, N_OL;
     bool P, D;
 
-    PCB(){
-    jobid = ((buffer[4] - '0') * 1000) + ((buffer[5] - '0') * 100) + ((buffer[6] - '0') * 10) + (buffer[7] - '0');
+    PCB()
+    {
+        jobid = ((buffer[4] - '0') * 1000) + ((buffer[5] - '0') * 100) + ((buffer[6] - '0') * 10) + (buffer[7] - '0');
 
-    // TTL
-    TTL = ((buffer[8] - '0') * 1000) + ((buffer[9] - '0') * 100) + ((buffer[10] - '0') * 10) + (buffer[11] - '0');
+        // TTL
+        TTL = ((buffer[8] - '0') * 1000) + ((buffer[9] - '0') * 100) + ((buffer[10] - '0') * 10) + (buffer[11] - '0');
 
-    // TLL
-    TLL = ((buffer[12] - '0') * 1000) + ((buffer[13] - '0') * 100) + ((buffer[14] - '0') * 10) + (buffer[15] - '0');
+        // TLL
+        TLL = ((buffer[12] - '0') * 1000) + ((buffer[13] - '0') * 100) + ((buffer[14] - '0') * 10) + (buffer[15] - '0');
 
-    // TTC
-    TTC = 0;
+        // TTC
+        TTC = 0;
 
-    // TLC
-    LLC = 0;
+        // TLC
+        LLC = 0;
 
-    D, P = false;
-    P_track = -1;
-    N_PC = -1;
-    D_track = -1;
-    N_DC=-1;
-    O_track=-1;
-    N_OL=-1;
+        D, P = false;
+        P_track = -1;
+        N_PC = -1;
+        D_track = -1;
+        N_DC = -1;
+        O_track = -1;
+        N_OL = -1;
     }
 };
 
@@ -55,23 +61,23 @@ class program
     char IR[4];
     char R[4];
     int PTR[4];
-    bool isAllocated[30]; 
+    bool isAllocated[30];
     bool C;
     int IC;
-    int RA; 
+    int RA;
     int ptc;
     int IC, SI, TI, PI;
 
-    public:
+public:
     void init();
-    int getloc(); 
+    int getloc();
     void startExecution(); // correct
     void executeUserProgram();
     int addressMap(int VA);
-    int allocate(); 
-    void terminate(vector <int> em);
+    int allocate();
+    void terminate(vector<int> em);
     void displayPCB(PCB pcb);
-
+    void MOS();
 };
 
 void program::init()
@@ -98,24 +104,21 @@ void program::init()
 
     PTR[4] = {-1}; // c
 
-    RA = -1; 
-    TI = 0;  
-    SI = 3;  
-    PI = 0;  
-    IOI = 1; //c
+    RA = -1;
+    TI = 0;
+    SI = 3;
+    PI = 0;
+    IOI = 1; // c
 
-    for (int i = 0; i < 30; i++) 
+    for (int i = 0; i < 30; i++)
     {
         isAllocated[i] = false;
     }
 
     // creating a PCB object and initializing the values
 
-
     PCB pcb;
     displayPCB(pcb);
-
-   
 }
 
 int program::getloc()
@@ -154,7 +157,7 @@ int program::addressMap(int VA)
     cout << "RA : " << RA << endl
          << endl;
     // checking for invalid page fault error
-    if (!isAllocated[RA / 10]) 
+    if (!isAllocated[RA / 10])
     {
         PI = 3;
         MOS();
@@ -164,7 +167,7 @@ int program::addressMap(int VA)
 }
 
 int program::allocate()
-{ 
+{
     cout << "ALLOCATE()" << endl
          << endl;
 
@@ -179,42 +182,45 @@ int program::allocate()
     return block;
 }
 
-void move_pcb( queue<PCB>& q1, queue<PCB>& q2){
+void move_pcb(queue<PCB> &q1, queue<PCB> &q2)
+{
     // q1->q2
     PCB pcb = q1.front();
     q1.pop();
     q2.push(pcb);
-
 }
 
-void move_buffer( queue<char*>& q1, queue<char*>& q2){
+void move_buffer(queue<char *> &q1, queue<char *> &q2)
+{
 
-    //q1->q2
-    char* buffer = q1.front();
+    // q1->q2
+    char *buffer = q1.front();
     q1.pop();
     q2.push(buffer);
-
 }
 
-void displayPCB(PCB pcb){
-     // printing the PCB
+void displayPCB(PCB pcb)
+{
+    // printing the PCB
     cout << "\nPCB: " << endl;
     cout << "jobid:\t" << pcb.jobid << endl;
     cout << "TTL:\t" << pcb.TTL << endl;
     cout << "TLL:\t" << pcb.TLL << endl;
     cout << "TTC:\t" << pcb.TTC << endl;
-    cout << "LLC:\t" << pcb.LLC << endl << endl;
+    cout << "LLC:\t" << pcb.LLC << endl
+         << endl;
     cout << "D:\t" << pcb.D << endl;
     cout << "P:\t" << pcb.P << endl;
     cout << "P_track:\t" << pcb.P_track << endl;
-    cout << "N_PC:\t" << pcb.N_PC<< endl;
+    cout << "N_PC:\t" << pcb.N_PC << endl;
     cout << "D_track:\t" << pcb.D_track << endl;
     cout << "N_DC:\t" << pcb.N_DC << endl;
     cout << "O_track:\t" << pcb.O_track << endl;
-    cout << "N_OL:\t" << pcb.N_OL<< endl;
+    cout << "N_OL:\t" << pcb.N_OL << endl;
 }
 
-void em_init(){
+void em_init()
+{
     EM[0] = "No Error";
     EM[1] = "Out of Data";
     EM[2] = "Line Limit Exceeded";
@@ -224,14 +230,132 @@ void em_init(){
     EM[6] = "Invalid Page Fault";
 }
 
-void program::terminate(vector <int> em){
-    
-    int n = em.size();
+void program::terminate(vector<int> em)
+{
 
-    for(int i=0; i<n; i++){
-        Output << endl << endl;
-        Output << EM[em[i]];
+    int n = em.size();
+    Output << endl
+           << endl;
+    for (int i = 0; i < n; i++)
+    {
+        Output << EM[em[i]] << endl;
     }
+}
+
+void program::MOS()
+{
+
+    // TI and SI
+    if ((TI == 0 | TI == 1) && (SI == 1))
+    {
+        move_pcb(rq, ioq);
+        // read();
+    }
+    else if ((TI == 0 | TI == 1) && (SI == 2))
+    {
+        move_pcb(rq, ioq);
+        // write();
+    }
+    else if ((TI == 0 | TI == 1) && (SI == 3))
+    {
+        move_pcb(rq, tq);
+        terminate({0});
+    }
+    else if (TI == 2 && SI == 1)
+    {
+        move_pcb(rq, tq);
+        terminate({3});
+    }
+    else if (TI == 2 && SI == 2)
+    {
+        move_pcb(rq, ioq);
+        // write();
+        move_pcb(ioq, tq);
+        terminate({3});
+    }
+    else if (TI == 2 && SI == 3)
+    {
+        move_pcb(rq, tq);
+        terminate({0});
+    }
+
+    // TI and PI
+    if ((TI == 0 | TI == 1) && PI == 1)
+    {
+        move_pcb(rq, tq);
+        terminate({4});
+    }
+    else if ((TI == 0 | TI == 1) && PI == 2)
+    {
+        move_pcb(rq, tq);
+        terminate({5});
+    }
+    else if ((TI == 0 | TI == 1) && PI == 3)
+    {
+       // check if valid
+        if (IR[0] == 'G' && IR[1] == 'D' || IR[0] == 'S' && IR[1] == 'R'){
+            int block = allocate();
+
+            int PTE = ((PTR[1] * 100) + (PTR[2] * 10) + PTR[3]) + ptc;
+            isAllocated[block] = true; 
+            ptc++;     
+            M[PTE][2] = (block / 10) + '0';
+
+            M[PTE][3] = (block % 10) + '0'; 
+
+            IC--; 
+            pcb.TTC++;                 
+        }
+        else{
+            move_pcb(rq, tq);
+            terminate({0});
+        }
+    }
+    else if (TI == 2 && PI == 1){
+        move_pcb(rq, tq);
+        terminate({3, 4});
+    }
+    else if (TI == 2 && PI == 2){
+        move_pcb(rq, tq);
+        terminate({3, 5});
+    }
+    else if (TI == 2 && PI == 3){
+        move_pcb(rq, tq);
+        terminate({3});
+    }
+
+
+
+    //IOI
+    if (IOI == 1){
+        IR1();
+    }
+    else if(IOI == 2){
+        IR2();
+    }
+    else if(IOI == 3){
+        IR2();
+        IR1();
+    }
+    else if(IOI == 4){
+        IR3();
+    }
+    else if(IOI == 5){
+        IR1();
+        IR3();
+    }
+    else if(IOI == 6){
+        IR3();
+        IR2();
+    }
+    else if(IOI == 7){
+        IR2();
+        IR1();
+        IR3();
+    }
+
+    SI = 0, PI = 0, TI = 0, IOI = 1; //unsure
+
 }
 
 class super_mem
@@ -267,7 +391,8 @@ public:
     bool flag;
     int timer;
 
-    CH1(){
+    CH1()
+    {
         flag = false;
         timer = 0;
     }
@@ -279,7 +404,8 @@ public:
     bool flag;
     int timer;
 
-     CH2(){
+    CH2()
+    {
         flag = false;
         timer = 0;
     }
@@ -291,26 +417,30 @@ public:
     bool flag;
     int timer;
 
-     CH3(){
+    CH3()
+    {
         flag = false;
         timer = 0;
     }
 } ch3;
 
-void ch1_start(){
-    IOI-=1;
+void ch1_start()
+{
+    IOI -= 1;
     ch1.timer = 0;
     ch1.flag = true;
 }
 
-void ch2_start(){
-    IOI-=2;
+void ch2_start()
+{
+    IOI -= 2;
     ch2.timer = 0;
     ch2.flag = true;
 }
 
-void ch3_start(){
-    IOI-=4;
+void ch3_start()
+{
+    IOI -= 4;
     ch3.timer = 0;
     ch3.flag = true;
 }
@@ -365,7 +495,8 @@ void simulation()
     }
 
     // checking for interrupts
-    if(SI!=0 || PI!=0 || TI!=0 || IOI!=0){
+    if (SI != 0 || PI != 0 || TI != 0 || IOI != 0)
+    {
         MOS();
     }
 }
