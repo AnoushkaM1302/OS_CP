@@ -14,7 +14,7 @@ const int TS = 100;
 queue<PCB> rq, ioq, lq, tq;
 queue<char *> ebq, ifbq, ofbq;
 
-//Interrupt routines
+// Interrupt routines
 void IR1();
 void IR2();
 void IR3();
@@ -32,13 +32,13 @@ public:
 
     PCB()
     {
-        jobid = ((buffer[4] - '0') * 1000) + ((buffer[5] - '0') * 100) + ((buffer[6] - '0') * 10) + (buffer[7] - '0');
+        jobid = ((ifbq.front()[4] - '0') * 1000) + ((ifbq.front()[5] - '0') * 100) + ((ifbq.front()[6] - '0') * 10) + (ifbq.front()[7] - '0');
 
         // TTL
-        TTL = ((buffer[8] - '0') * 1000) + ((buffer[9] - '0') * 100) + ((buffer[10] - '0') * 10) + (buffer[11] - '0');
+        TTL = ((ifbq.front()[8] - '0') * 1000) + ((ifbq.front()[9] - '0') * 100) + ((ifbq.front()[10] - '0') * 10) + (ifbq.front()[11] - '0');
 
         // TLL
-        TLL = ((buffer[12] - '0') * 1000) + ((buffer[13] - '0') * 100) + ((buffer[14] - '0') * 10) + (buffer[15] - '0');
+        TLL = ((ifbq.front()[12] - '0') * 1000) + ((ifbq.front()[13] - '0') * 100) + ((ifbq.front()[14] - '0') * 10) + (ifbq.front()[15] - '0');
 
         // TTC
         TTC = 0;
@@ -54,10 +54,11 @@ public:
         O_track = -1;
         N_OL = -1;
     }
-};
+}pcb; //unsure 
 
 class program
 {
+public:
     char M[300][4];
     char IR[4];
     char R[4];
@@ -69,7 +70,6 @@ class program
     int ptc;
     int IC, SI, TI, PI;
 
-public:
     void init();
     int getloc();
     void startExecution(); // correct
@@ -79,7 +79,7 @@ public:
     void terminate(vector<int> em);
     void displayPCB(PCB pcb);
     void MOS();
-};
+} prog;
 
 void program::init()
 {
@@ -115,11 +115,6 @@ void program::init()
     {
         isAllocated[i] = false;
     }
-
-    // creating a PCB object and initializing the values
-
-    PCB pcb;
-    displayPCB(pcb);
 }
 
 int program::getloc()
@@ -293,102 +288,224 @@ void program::MOS()
     }
     else if ((TI == 0 | TI == 1) && PI == 3)
     {
-       // check if valid
-        if (IR[0] == 'G' && IR[1] == 'D' || IR[0] == 'S' && IR[1] == 'R'){
+        // check if valid
+        if (IR[0] == 'G' && IR[1] == 'D' || IR[0] == 'S' && IR[1] == 'R')
+        {
             int block = allocate();
 
             int PTE = ((PTR[1] * 100) + (PTR[2] * 10) + PTR[3]) + ptc;
-            isAllocated[block] = true; 
-            ptc++;     
+            isAllocated[block] = true;
+            ptc++;
             M[PTE][2] = (block / 10) + '0';
 
-            M[PTE][3] = (block % 10) + '0'; 
+            M[PTE][3] = (block % 10) + '0';
 
-            IC--; 
-            pcb.TTC++;                 
+            IC--;
+            pcb.TTC++;
         }
-        else{
+        else
+        {
             move_pcb(rq, tq);
             terminate({0});
         }
     }
-    else if (TI == 2 && PI == 1){
+    else if (TI == 2 && PI == 1)
+    {
         move_pcb(rq, tq);
         terminate({3, 4});
     }
-    else if (TI == 2 && PI == 2){
+    else if (TI == 2 && PI == 2)
+    {
         move_pcb(rq, tq);
         terminate({3, 5});
     }
-    else if (TI == 2 && PI == 3){
+    else if (TI == 2 && PI == 3)
+    {
         move_pcb(rq, tq);
         terminate({3});
     }
 
-
-
-    //IOI
-    if (IOI == 1){
+    // IOI
+    if (IOI == 1)
+    {
         IR1();
     }
-    else if(IOI == 2){
+    else if (IOI == 2)
+    {
         IR2();
     }
-    else if(IOI == 3){
+    else if (IOI == 3)
+    {
         IR2();
         IR1();
     }
-    else if(IOI == 4){
+    else if (IOI == 4)
+    {
         IR3();
     }
-    else if(IOI == 5){
-        IR1();
-        IR3();
-    }
-    else if(IOI == 6){
-        IR3();
-        IR2();
-    }
-    else if(IOI == 7){
-        IR2();
+    else if (IOI == 5)
+    {
         IR1();
         IR3();
     }
+    else if (IOI == 6)
+    {
+        IR3();
+        IR2();
+    }
+    else if (IOI == 7)
+    {
+        IR2();
+        IR1();
+        IR3();
+    }
 
-    SI = 0, PI = 0, TI = 0, IOI = 1; //unsure
-
+    SI = 0, PI = 0, TI = 0, IOI = 1; // unsure
 }
 
-void IR2(){
- //Print given ofb, change status from ofb to eb
+void IR1()
+{
+    // Read next card in given eb, change status to ifb, place on ifb (q)
 
-char* buffer = ofbq.front();
-ofbq.pop();
- string output = "";
- for(int i=0; i<40 ; i++){
-    output+=buffer[i];
- }
+    char *buffer = ebq.front();
+    ebq.pop();
 
-//initializing the buffer
- Output << output << endl;
- for(int i=0; i<40 ; i++){
-    buffer[i] = '\0';
- }
+    // reading from input file line by line
+    Input.getline(buffer, 41);
+    ifbq.push(buffer);
 
-//Return buffer to eb(q)
- ebq.push(buffer);
+    // If not e-o-f and eb(q) not empty
+    if (!Input.eof() && ebq.empty() == false)
+    {
 
-//If ofb(q) not empty, 	
-if(ofbq.empty() == false){
+        // Get next eb
+        buffer = ebq.front();
+        ebq.pop();
 
-    //Get next ofb
-    buffer = ofbq.front();
+        // start Channel 1
+        start_ch1();
+    }
+
+    // Examine ifbq
+    if (ifbq.front()[0] == '$' && ifbq.front()[1] == 'A' && ifbq.front()[2] == 'M' && ifbq.front()[3] == 'J')
+    {
+        // Create and initialize PCB
+
+        PCB pcb;
+        displayPCB(pcb);
+        prog.init();
+
+        // Allocate frame for Page Table
+        //  generating PTR
+        Output << "------jobID: " << pcb.jobid << " initiated------\n\n";
+        int ptr = prog.allocate() * 10;
+
+        // allocating PTR
+        prog.PTR[0] = ptr / 1000;
+        prog.PTR[1] = (ptr / 100) % 10;
+        prog.PTR[2] = (ptr / 10) % 10;
+        prog.PTR[3] = ptr % 10;
+        cout << "PTR: " << ptr << endl;
+
+        // Initialize Page Table and PTR
+        for (int i = ptr; i < ptr + 10; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                prog.M[i][j] = '*';
+            }
+        }
+
+        prog.isAllocated[ptr / 10] = true;
+
+        // Set F <- P (Program cards to follow)
+        pcb.P = true;
+
+        // Change Status from ifb to eb
+        char *buffer1 = ifbq.front();
+
+        ifbq.pop();
+
+        for (int i = 0; i < 40; i++)
+        {
+            buffer[i] = '\0';
+        }
+
+        // Return buffer to eb(q)
+        ebq.push(buffer1);
+    }
+    else if (ifbq.front()[0] == '$' && ifbq.front()[1] == 'D' && ifbq.front()[2] == 'T' && ifbq.front()[3] == 'A')
+    {
+        // Change Status from ifb to eb
+        char *buffer1 = ifbq.front();
+
+        ifbq.pop();
+
+        for (int i = 0; i < 40; i++)
+        {
+            buffer[i] = '\0';
+        }
+
+        // Return buffer to eb(q)
+        ebq.push(buffer1);
+    }
+    else if (ifbq.front()[0] == '$' && ifbq.front()[1] == 'E' && ifbq.front()[2] == 'N' && ifbq.front()[3] == 'D'){
+        
+        //Place PCB on LQ
+        lq.push(pcb); //unsure
+
+        // Change Status from ifb to eb
+        char *buffer1 = ifbq.front();
+
+        ifbq.pop();
+
+        for (int i = 0; i < 40; i++)
+        {
+            buffer[i] = '\0';
+        }
+
+        // Return buffer to eb(q)
+        ebq.push(buffer1);
+
+    }
+    else{
+        
+    }
+}
+
+void IR2()
+{
+    // Print given ofb, change status from ofb to eb
+
+    char *buffer = ofbq.front();
     ofbq.pop();
+    string output = "";
+    for (int i = 0; i < 40; i++)
+    {
+        output += buffer[i];
+    }
 
-    //start Channel 2
-    start_ch2();
-}
+    // initializing the buffer
+    Output << output << endl;
+    for (int i = 0; i < 40; i++)
+    {
+        buffer[i] = '\0';
+    }
 
+    // Return buffer to eb(q)
+    ebq.push(buffer);
+
+    // If ofb(q) not empty,
+    if (ofbq.empty() == false)
+    {
+
+        // Get next ofb
+        buffer = ofbq.front();
+        ofbq.pop();
+
+        // start Channel 2
+        start_ch2();
+    }
 }
 
 class super_mem
@@ -396,7 +513,7 @@ class super_mem
 
 public:
     // int cebq, cifbq, cofbq; // counters for queues
-    
+
     super_mem()
     {
         // cebq = 10;
@@ -457,7 +574,7 @@ public:
     }
 } ch3;
 
-void ch1_start()
+void start_ch1()
 {
     IOI -= 1;
     ch1.timer = 0;
@@ -536,8 +653,6 @@ void simulation()
 
 int main()
 {
-
-    program prog;
 
     Input.open("input.txt", ios::in);
     Output.open("output.txt", ios::app);
