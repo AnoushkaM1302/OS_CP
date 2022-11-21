@@ -3,39 +3,37 @@ using namespace std;
 
 // Process Control Block
 struct PCB
-{ // c
+{
     int jobid;
     int TTL;
     int TLL;
     int TTC;
-    int LLC; 
+    int LLC;
 } pcb;
 
 class program
 {
-    char M[300][4]; // c
+    char M[300][4];
     char IR[4];
     char R[4];
-    int PTR[4];         // c
-    int IC, SI, TI, PI; // c
+    int PTR[4];
+    int IC, SI, TI, PI;
     char buffer[40];
-    bool isAllocated[30]; // CHANGES
+    bool isAllocated[30];
     bool C;
-    // int flag;
-    // int m;
-    int EM; // c
-    // int VA; //c
-    int RA; // c
-    int ptc; //0-9
+    int flag;
+    int EM;
+    int RA;
+    int ptc; // 0-9
 
 public:
-    void init(); // correct
+    void init();
     void load();
-    int getloc();          // correct
-    void startExecution(); // correct
+    int getloc();
+    void startExecution();
     void executeUserProgram();
     void MOS();
-    void read();            // correct
+    void read();
     void write();           // correct
     void terminate(int EM); // correct
     int addressMap(int VA); // correct
@@ -68,15 +66,13 @@ void program::init()
 
     PTR[4] = {-1}; // c
 
-
-    EM = 0; // c
+    EM = 0;  // c
     RA = -1; // c
     TI = 0;  // c
     SI = 3;  // c
     PI = 0;  // c
-    // isAllocated[10] = false; // c
 
-    for (int i = 0; i < 30; i++) //CHANGES
+    for (int i = 0; i < 30; i++) // CHANGES
     {
         isAllocated[i] = false;
     }
@@ -118,15 +114,14 @@ int program::getloc()
 }
 
 int program::allocate()
-{ // c
-    // srand(time(0)); //c
-
+{
     cout << "ALLOCATE()" << endl
          << endl;
 
     int block = rand() % 30;
 
-    while(isAllocated[block]){
+    while (isAllocated[block])
+    {
         block = rand() % 30;
     }
 
@@ -139,7 +134,10 @@ void program::load()
 
     cout << "LOAD()" << endl
          << endl;
-
+    if (Input.eof())
+    {
+        exit(0);
+    }
     while (!Input.eof())
     {
         // initialising buffer
@@ -156,8 +154,8 @@ void program::load()
             cout << "$AMJ" << endl
                  << endl;
 
-
             init();
+            flag = 0;
             // c
             // generating PTR
             Output << "------jobID: " << pcb.jobid << " initiated------\n\n";
@@ -179,8 +177,7 @@ void program::load()
                 }
             }
 
-            isAllocated[ptr/10] = true; //CHANGES
-           
+            isAllocated[ptr / 10] = true; // CHANGES
         }
         else if (buffer[0] == '$' && buffer[1] == 'D' && buffer[2] == 'T' && buffer[3] == 'A')
         {
@@ -191,6 +188,7 @@ void program::load()
         }
         else if (buffer[0] == '$' && buffer[1] == 'E' && buffer[2] == 'N' && buffer[3] == 'D')
         {
+            flag = 1;
             cout << "$END" << endl
                  << endl;
             int x = 0;
@@ -208,69 +206,77 @@ void program::load()
             cout << "TTC:\t" << pcb.TTC << endl;
             cout << "LLC:\t" << pcb.LLC << endl
                  << endl;
-            
 
-            
             Output << "\nPCB: " << endl;
             Output << "jobid:\t" << pcb.jobid << endl;
             Output << "TTL:\t" << pcb.TTL << endl;
             Output << "TLL:\t" << pcb.TLL << endl;
             Output << "TTC:\t" << pcb.TTC << endl;
-            Output << "LLC:\t" << pcb.LLC << endl << endl;
+            Output << "LLC:\t" << pcb.LLC << endl
+                   << endl;
 
-            cout << "---job ID: " << pcb.jobid << " ENDED!!---" <<endl <<endl;
-            Output << "---job ID: " << pcb.jobid << " ENDED!!---" <<endl <<endl;
+            cout << "---job ID: " << pcb.jobid << " ENDED!!---" << endl
+                 << endl;
+            Output << "---job ID: " << pcb.jobid << " ENDED!!---" << endl
+                   << endl;
 
-
+            init();
             break;
         }
         else
         {
-            // reading from the program card
-            cout << "READING FROM THE PROGRAM CARD" << endl
-                 << endl;
-
-            // get frame for program page
-            int block = allocate(); // returns block [0-29] //c
-            cout << "block: " << block << endl;
-            int loc = block * 10;
-            cout << "loc: " << loc << endl;
-
-            // updating page table
-
-            int PTE = ((PTR[1] * 100) + (PTR[2] * 10) + PTR[3]) + ptc;
-            isAllocated[block] = true; // CHANGES
-            ptc++;                        // c
-            cout << "PTE: " << PTE << endl;
-
-            M[PTE][2] = (block / 10) + '0';
-
-            M[PTE][3] = (block % 10) + '0';
-            cout << "M[PTE] : " << M[PTE][2] << M[PTE][3] << endl;
-
-            int k = 0;
-            for (int i = loc; i < loc + 10; i++)
+            if (flag == 0)
             {
-                for (int j = 0; j < 4; j++)
+                // reading from the program card
+                cout << "READING FROM THE PROGRAM CARD" << endl
+                     << endl;
+
+                // get frame for program page
+                int block = allocate(); // returns block [0-29] //c
+                cout << "block: " << block << endl;
+                int loc = block * 10;
+                cout << "loc: " << loc << endl;
+
+                // updating page table
+
+                int PTE = ((PTR[1] * 100) + (PTR[2] * 10) + PTR[3]) + ptc;
+                isAllocated[block] = true; // CHANGES
+                ptc++;                     // c
+                cout << "PTE: " << PTE << endl;
+
+                M[PTE][2] = (block / 10) + '0';
+
+                M[PTE][3] = (block % 10) + '0';
+                cout << "M[PTE] : " << M[PTE][2] << M[PTE][3] << endl;
+
+                int k = 0;
+                for (int i = loc; i < loc + 10; i++)
                 {
-                    // error handling for when the OP_CODE is 'H'
-                    if (buffer[k] == 'H')
+                    for (int j = 0; j < 4; j++)
                     {
-                        M[i][j] = buffer[k];
-                        k++;
+                        // error handling for when the OP_CODE is 'H'
+                        if (buffer[k] == 'H')
+                        {
+                            M[i][j] = buffer[k];
+                            k++;
+                            break;
+                        }
+                        else
+                        {
+                            M[i][j] = buffer[k];
+                            k++;
+                        }
+                    }
+
+                    if (k == 40 || buffer[k] == ' ' || buffer[k] == '\0')
+                    {
                         break;
                     }
-                    else
-                    {
-                        M[i][j] = buffer[k];
-                        k++;
-                    }
                 }
-
-                if (k == 40 || buffer[k] == ' ' || buffer[k] == '\0')
-                {
-                    break;
-                }
+            }
+            else
+            {
+                continue;
             }
         }
     }
@@ -301,13 +307,13 @@ int program::addressMap(int VA)
     int PTE = (VA / 10) + ((PTR[1] * 100) + (PTR[2] * 10) + (PTR[3]));
     cout << "PTE :" << PTE << endl;
 
-    RA = ((M[PTE][2] - '0') * 10 + (M[PTE][3] - '0')) *10 + (VA % 10); //CHANGES
+    RA = ((M[PTE][2] - '0') * 10 + (M[PTE][3] - '0')) * 10 + (VA % 10); // CHANGES
     cout << "VA :" << VA << endl;
     cout << "RA : " << RA << endl
          << endl;
-// -----PROBLEM HERE------
-    // checking for invalid page fault error
-    if (!isAllocated[ RA / 10]) // CHANGES
+    // -----PROBLEM HERE------
+    // checking for page fault error
+    if (!isAllocated[RA / 10]) // CHANGES
     {
         PI = 3;
         MOS();
@@ -329,7 +335,7 @@ void program::executeUserProgram()
             break;
         }
 
-        IR[0] = M[RA][0]; //CHANGES
+        IR[0] = M[RA][0]; // CHANGES
         IR[1] = M[RA][1];
         IR[2] = M[RA][2];
         IR[3] = M[RA][3];
@@ -342,85 +348,84 @@ void program::executeUserProgram()
             MOS();
             break;
         }
-        else{
-        
-        RA = addressMap(((IR[2] - '0') * 10 + (IR[3] - '0')));
+        else
+        {
 
-        if (PI != 0)
-        {
-            break;
-        }
+            RA = addressMap(((IR[2] - '0') * 10 + (IR[3] - '0')));
 
-        cout << "NO PI ERROR " << endl << endl;
-        if (IR[0] == 'P' && IR[1] == 'D')
-        {
-            SI = 2;
-            MOS();
-            pcb.TTC++;
-        }
-        else if (IR[0] == 'G' && IR[1] == 'D')
-        {
-            cout << "GD here" << endl
+            if (PI != 0)
+            {
+                break;
+            }
+
+            cout << "NO PI ERROR " << endl
                  << endl;
-            SI = 1;
-            MOS();
-            
-            
-        }
-        else if (IR[0] == 'L' && IR[1] == 'R')
-        {
-
-            for (int i = 0; i < 4; i++)
+            if (IR[0] == 'P' && IR[1] == 'D')
             {
-                R[i] = M[RA][i];
+                SI = 2;
+                MOS();
+                pcb.TTC++;
             }
-
-            pcb.TTC++;
-        }
-        else if (IR[0] == 'S' && IR[1] == 'R')
-        {
-
-            for (int i = 0; i < 4; i++)
+            else if (IR[0] == 'G' && IR[1] == 'D')
             {
-                M[RA][i] = R[i];
+                cout << "GD here" << endl
+                     << endl;
+                SI = 1;
+                MOS();
             }
-
-            pcb.TTC += 2;
-        }
-        else if (IR[0] == 'B' && IR[1] == 'T')
-        {
-            if (C)
+            else if (IR[0] == 'L' && IR[1] == 'R')
             {
-                int loc = getloc();
 
-                IC = loc;
+                for (int i = 0; i < 4; i++)
+                {
+                    R[i] = M[RA][i];
+                }
+
+                pcb.TTC++;
             }
-
-            pcb.TTC++;
-        }
-        else if (IR[0] == 'C' && IR[1] == 'R')
-        {
-
-            if (R[0] == M[RA][0] && R[1] == M[RA][1] && R[2] == M[RA][2] && R[3] == M[RA][3])
+            else if (IR[0] == 'S' && IR[1] == 'R')
             {
-                C = true;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    M[RA][i] = R[i];
+                }
+
+                pcb.TTC += 2;
+            }
+            else if (IR[0] == 'B' && IR[1] == 'T')
+            {
+                if (C)
+                {
+                    int loc = getloc();
+
+                    IC = loc;
+                }
+
+                pcb.TTC++;
+            }
+            else if (IR[0] == 'C' && IR[1] == 'R')
+            {
+
+                if (R[0] == M[RA][0] && R[1] == M[RA][1] && R[2] == M[RA][2] && R[3] == M[RA][3])
+                {
+                    C = true;
+                }
+                else
+                {
+                    C = false;
+                }
+
+                pcb.TTC++;
             }
             else
             {
-                C = false;
+                PI = 1;
+                MOS();
             }
-
-            pcb.TTC++;
-        }
-        else
-        {
-            PI = 1;
-            MOS();
         }
 
-        }
-
-         // checking for TLE
+        // checking for TLE
         if (pcb.TTC > pcb.TTL)
         {
             TI = 2;
@@ -433,11 +438,11 @@ void program::MOS()
 {
     cout << "MOS()" << endl
          << endl;
-    Output << "MOS() called....\n";
-    Output << "INTERRUPT VALUES:\n";
-    Output << "SI: " << SI <<endl;
-    Output << "PI: " << PI <<endl;
-    Output << "TI: " << TI <<endl << endl;
+    // Output << "MOS() called....\n";
+    // Output << "INTERRUPT VALUES:\n";
+    // Output << "SI: " << SI <<endl;
+    // Output << "PI: " << PI <<endl;
+    // Output << "TI: " << TI <<endl << endl;
 
     // TI and PI
     if (TI == 0 && PI == 1)
@@ -456,13 +461,13 @@ void program::MOS()
         {
             cout << "INSIDE MOS() : VALID PAGE FAULT" << endl;
             Output << "Error: VALID PAGE FAULT, REALLOCATING....\n";
-            
-// ---PROBLEM HERE----
+
+            // ---PROBLEM HERE----
             int block = allocate();
 
             int PTE = ((PTR[1] * 100) + (PTR[2] * 10) + PTR[3]) + ptc;
             isAllocated[block] = true; // CHANGES
-            ptc++;                        // c
+            ptc++;                     // c
             cout << "PTE: " << PTE << endl;
 
             M[PTE][2] = (block / 10) + '0';
@@ -470,15 +475,13 @@ void program::MOS()
             M[PTE][3] = (block % 10) + '0';
             cout << "M[PTE] : " << M[PTE][2] << M[PTE][3] << endl;
 
-
             IC--;
-            PI = 0; //c
+            PI = 0; // c
 
             // incrementing the TTC
             pcb.TTC++;
             executeUserProgram(); // CHANGES
-            // return;
-            
+            return;
         }
         else
         {
@@ -487,12 +490,12 @@ void program::MOS()
     }
     else if (TI == 2 && PI == 1)
     {
-        cout << "Operation Code Error" << endl;
+        Output << "Operation Code Error" << endl;
         terminate(3);
     }
     else if (TI == 2 && PI == 2)
     {
-        cout << "Operand Error" << endl;
+        Output << "Operand Error" << endl;
         terminate(3);
     }
     else if (TI == 2 && PI == 3)
@@ -526,6 +529,8 @@ void program::MOS()
     {
         terminate(0);
     }
+
+    // PI = 0, SI = 0, TI = 0;
 }
 
 void program::read()
@@ -555,7 +560,7 @@ void program::read()
             k++;
         }
     }
-    //incrementing the TTC
+    // incrementing the TTC
     pcb.TTC++;
     // executeUserProgram();
     return;
@@ -609,44 +614,57 @@ void program::write()
 
 void program::terminate(int EM)
 {
-    cout << "TERMINATE()" << endl << endl;
-    Output << "terminating....\n";
-    if (EM == 0) // c
+    if (flag == 0)
     {
-        Output << "jobID: "<< pcb.jobid << " No Error\n\n";
-        cout << "jobID: "<< pcb.jobid << " No Error\n";
-    }
-    else if (EM == 1)
-    {
-        Output << "jobID: "<< pcb.jobid << " Out of Data\n\n" ;
-        cout << "jobID: "<< pcb.jobid << " Out of Data\n" ;
-    }
-    else if (EM == 2)
-    {
-        Output << "jobID: "<< pcb.jobid << " Line Limit Exceeded\n\n";
-        cout << "jobID: "<< pcb.jobid << " Line Limit Exceeded\n";
-    }
-    else if (EM == 3)
-    {
-        Output << "jobID: "<< pcb.jobid << " Time Limit Exceeded\n\n";
-        cout << "jobID: "<< pcb.jobid << " Time Limit Exceeded\n";
-    }
-    else if (EM == 4)
-    {
-        Output << "jobID: "<< pcb.jobid << " Operation Code Error\n\n";
-        cout << "jobID: "<< pcb.jobid << " Operation Code Error\n";
-    }
-    else if (EM == 5)
-    {
-        Output << "jobID: "<< pcb.jobid << " Operand Error\n\n";
-        cout << "jobID: "<< pcb.jobid << " Operand Error\n";
-    }
-    else if (EM == 6)
-    {
-        Output <<"jobID: "<< pcb.jobid <<  " Invalid Page Fault\n\n";
-        cout <<"jobID: "<< pcb.jobid <<  " Invalid Page Fault\n";
+        cout << "TERMINATE()" << endl
+             << endl;
+        // Output << "terminating....\n";
+        if (EM == 0) // c
+        {
+            Output << "jobID: " << pcb.jobid << " No Error\n\n";
+            cout << "jobID: " << pcb.jobid << " No Error\n";
+        }
+        else if (EM == 1)
+        {
+            Output << "jobID: " << pcb.jobid << " Out of Data\n\n";
+            cout << "jobID: " << pcb.jobid << " Out of Data\n";
+
+            Output << "\nPCB: " << endl;
+            Output << "jobid:\t" << pcb.jobid << endl;
+            Output << "TTL:\t" << pcb.TTL << endl;
+            Output << "TLL:\t" << pcb.TLL << endl;
+            Output << "TTC:\t" << pcb.TTC << endl;
+            Output << "LLC:\t" << pcb.LLC << endl
+                   << endl;
+        }
+        else if (EM == 2)
+        {
+            Output << "jobID: " << pcb.jobid << " Line Limit Exceeded\n\n";
+            cout << "jobID: " << pcb.jobid << " Line Limit Exceeded\n";
+        }
+        else if (EM == 3)
+        {
+            Output << "jobID: " << pcb.jobid << " Time Limit Exceeded\n\n";
+            cout << "jobID: " << pcb.jobid << " Time Limit Exceeded\n";
+        }
+        else if (EM == 4)
+        {
+            Output << "jobID: " << pcb.jobid << " Operation Code Error\n\n";
+            cout << "jobID: " << pcb.jobid << " Operation Code Error\n";
+        }
+        else if (EM == 5)
+        {
+            Output << "jobID: " << pcb.jobid << " Operand Error\n\n";
+            cout << "jobID: " << pcb.jobid << " Operand Error\n";
+        }
+        else if (EM == 6)
+        {
+            Output << "jobID: " << pcb.jobid << " Invalid Page Fault\n\n";
+            cout << "jobID: " << pcb.jobid << " Invalid Page Fault\n";
+        }
     }
 
+    flag = 1;
     load();
     // return;
 }
